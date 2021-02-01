@@ -6,7 +6,7 @@ bumpversion
 celery
 cryptography
 boto
-marshmallow
+marshmallow==2.21
 marshmallow-sqlalchemy
 multidict
 PyJWT
@@ -14,7 +14,7 @@ pyfcm
 pushjack
 requests
 redis
-sanic==0.7.0
+sanic==20.12.1
 sqlalchemy
 sqlalchemy_mixins
 sqlalchemy_utils

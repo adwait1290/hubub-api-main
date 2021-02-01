@@ -63,8 +63,8 @@ service.hububconfig = hububconfig
 
 service.engine = engine
 service.session = session
-service.devops_engine = devops_engine
-service.devops_session = devops_session
+# service.devops_engine = devops_engine
+# service.devops_session = devops_session
 
 service.pgloop = loop
 

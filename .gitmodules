@@ -1,0 +1,3 @@
+[submodule "hubub_common"]
+	path = hubub_common
+	url = https://github.com/adwait1290/hubub_common

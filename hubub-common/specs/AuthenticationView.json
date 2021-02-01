@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Authentication Request API - Request schema",
+  "description": "Request to authenticate an end-user",
+  "properties": {
+    "account_name": {
+      "type": "integer",
+      "multipleOf": 1,
+      "minimum": 1,
+      "exclusiveMinimum": false,
+      "title": "Account_name schema.",
+      "description": "Account name - Identifier for the account that the username belongs to.",
+      "id": "https://api.hubub.com/v0.1/account_name"
+    },
+    "username": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Username schema.",
+      "description": "username that belongs to the client's account",
+      "id": "https://api.hubub.com/v0.1/username"
+    }
+  },
+  "id": "https://api.hubub.com/v0.1",
+  "required": [
+    "account_name",
+    "username"
+  ]
+}

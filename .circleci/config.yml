@@ -1,0 +1,280 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.6.12
+    working_directory: ~/hubub-api-main
+    steps:
+      - checkout
+      - run:
+          name: get submodules
+          command: |
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            git submodule sync && git submodule update --init
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+  tests:
+    docker:
+      - image: circleci/python:3.6.12
+        environment:
+          APP_CONFIG_FILE: "dev.py"
+    working_directory: ~/hubub-api-main
+    steps:
+      - checkout
+      - run:
+          name: get submodules
+          command: |
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            git submodule sync && git submodule update --init
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            echo "testing:::.. " ${CIRCLE_BRANCH} ${APP_CONFIG_FILE}
+            nosetests
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+      - store_test_results:
+          path: test-reports/
+
+  release_dev:
+    docker:
+      - image: circleci/python:3.6.12
+    working_directory: ~/hubub-api-main
+    steps:
+      - checkout
+      - run:
+          name: get submodules
+          command: |
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            git submodule sync
+            git submodule update --init
+            cd hubub-common
+            git checkout dev
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run: bash .circleci/setup-heroku.sh
+      - deploy:
+          name: Deploy to Heroku
+          command: |
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            git remote -v
+            echo "branch" ${CIRCLE_BRANCH} "building" ${BUILD_TYPE}
+            if [ "${CIRCLE_BRANCH}" == "dev" ]; then
+              ls -la config
+              rm config/prod.py
+              rm config/stage.py
+              rm config/local.py
+              rm -r .circleci
+              ls -la config
+              git add -A
+              git commit -m "removing config files"
+              git push -f heroku-dev main
+            else
+              echo "Not deploying"
+            fi
+
+  release_stage:
+    docker:
+      - image: circleci/python:3.6.12
+    working_directory: ~/hubub-api-main
+    steps:
+      - checkout
+      - run:
+          name: get submodules
+          command: |
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            git submodule sync
+            git submodule update --init
+            cd hubub-common
+            git checkout stage
+      - run:
+          name: Install Dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+
+      - run: bash .circleci/setup-heroku.sh
+      - deploy:
+          name: Deploy to Heroku
+          command: |
+            echo "branch" ${CIRCLE_BRANCH}
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            if [ "${CIRCLE_BRANCH}" == "stage" ]; then
+              ls -la config
+              rm config/prod.py
+              rm config/dev.py
+              rm config/local.py
+              rm -r .circleci
+              ls -la config
+              git add -A
+              git commit -m "removing config files"
+              git push -f heroku-stage main
+            else
+              echo "Not deploying"
+            fi
+
+  release_prod:
+    docker:
+      - image: circleci/python:3.6.12
+    working_directory: ~/hubub-api-main
+    steps:
+      - checkout
+      - run:
+          name: get submodules
+          command: |
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            git submodule sync
+            git submodule update --init
+            cd hubub-common
+            git checkout prod
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run: bash .circleci/setup-heroku.sh
+      - deploy:
+          name: Deploy to Heroku
+          command: |
+            echo "branch" ${CIRCLE_BRANCH} "building" ${BUILD_TYPE}
+            echo "${BUILD_TYPE}" == "automatic"
+            git config --global user.name "adwait1290"
+            git config --global user.email "adwaitathale@gmail.com"
+            git config --global user.password $GITHUB_PASSWORD
+            if [ "${CIRCLE_BRANCH}" == "prod" ]; then
+              ls -la config
+              rm config/stage.py
+              rm config/dev.py
+              rm config/local.py
+              rm -r .circleci
+              ls -la config
+              git add -A
+              git commit -m "removing config files"
+              git push -f heroku-prod main
+            else
+              echo "Not deploying"
+            fi
+
+
+workflows:
+  version: 2
+  hubub-api-main:
+    jobs:
+      - build:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - prod
+                - stage
+                - main
+      - tests:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - prod
+                - stage
+          requires:
+            - build
+      - hold_for_approval:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - prod
+          type: approval
+          requires:
+            - tests
+      - release_dev:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - dev
+      - release_stage:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - stage
+          requires:
+            - tests
+      - release_prod:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - prod
+          requires:
+            - hold_for_approval

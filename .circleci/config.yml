@@ -82,7 +82,7 @@ jobs:
             git config --global user.password $GITHUB_PASSWORD
             git submodule sync
             git submodule update --init
-            cd hubub-common
+            cd hubub_common
             git checkout dev
       # Download and cache dependencies
       - restore_cache:
@@ -138,7 +138,7 @@ jobs:
             git config --global user.password $GITHUB_PASSWORD
             git submodule sync
             git submodule update --init
-            cd hubub-common
+            cd hubub_common
             git checkout stage
       - run:
           name: Install Dependencies
@@ -183,7 +183,7 @@ jobs:
             git config --global user.password $GITHUB_PASSWORD
             git submodule sync
             git submodule update --init
-            cd hubub-common
+            cd hubub_common
             git checkout prod
       # Download and cache dependencies
       - restore_cache:

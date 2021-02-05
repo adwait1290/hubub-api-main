@@ -71,6 +71,179 @@ class ApiVersionView(HTTPMethodView):
         ver = sanic_response_json({'version': request.app.version, 'process': str(os.getpid())})
         return ver
 
+
+class RegisterView(HTTPMethodView):
+
+    async def post(self, request):
+
+        return sanic_response_json({"device": {
+            "status": "Dummy User Created Response",
+        }
+        }, status=200)
+
+
+class LoginView(HTTPMethodView):
+
+    async def post(self, request):
+
+        encoding = request.body.decode("utf-8")
+        data = json.loads(encoding)
+
+        return sanic_response_json({"device": {
+            "status": "Dummy User Login Response",
+        }
+        }, status=200)
+
+
+class HomeView(HTTPMethodView):
+
+    async def get(self, request):
+
+        encoding = request.body.decode("utf-8")
+        data = json.loads(encoding)
+        username = data['username']
+        user = request.app.session.query(User). \
+            filter(User.username == username). \
+            filter(User.deleted_at == None).one_or_none()
+        # User Found
+        if user:
+            pass
+        # No User Found
+        else:
+            pass
+
+        return sanic_response_json(
+            {"hubs": {
+                "detailed_hubs": [
+                    {"title": "",
+                     "description": "",
+                     "is_published": "",
+                     "hub_url": "",
+                     "image_url": "",
+                     "order": ""
+                     }, {}
+                ],
+                "simple_hubs": [
+                    {
+                        "title": "",
+                        "url_type": "",
+                        "is_published": "",
+                        "hub_url": "",
+                        "image_url": "",
+                        "order": ""
+                    }, {}
+                ]
+            }
+        }, status=200)
+
+
+class CreateDetailedHubView(HTTPMethodView):
+    async def post(self, request):
+
+        encoding = request.body.decode("utf-8")
+        data = json.loads(encoding)
+        username = data['username']
+        user = request.app.session.query(User). \
+            filter(User.username == username). \
+            filter(User.deleted_at == None).one_or_none()
+        # User Found
+        if user:
+            pass
+        # No User Found
+        else:
+            pass
+
+        return sanic_response_json({
+            "title": "",
+            "description": "",
+            "is_published": "",
+            "hub_url": "",
+            "image_url": "",
+            "order": ""
+        }, status=200)
+
+
+class EditDetailedHubView(HTTPMethodView):
+
+    async def post(self, request):
+
+        encoding = request.body.decode("utf-8")
+        data = json.loads(encoding)
+        username = data['username']
+        user = request.app.session.query(User). \
+            filter(User.username == username). \
+            filter(User.deleted_at == None).one_or_none()
+        # User Found
+        if user:
+            pass
+        # No User Found
+        else:
+            pass
+
+        return sanic_response_json({
+            "title": "",
+            "description": "",
+            "is_published": "",
+            "hub_url": "",
+            "image_url": "",
+            "order": ""
+        }, status=200)
+
+
+class CreateSimpleHubView(HTTPMethodView):
+
+    async def post(self, request):
+
+        encoding = request.body.decode("utf-8")
+        data = json.loads(encoding)
+        username = data['username']
+        user = request.app.session.query(User). \
+            filter(User.username == username). \
+            filter(User.deleted_at == None).one_or_none()
+        # User Found
+        if user:
+            pass
+        # No User Found
+        else:
+            pass
+
+        return sanic_response_json({
+            "title": "",
+            "description": "",
+            "is_published": "",
+            "hub_url": "",
+            "image_url": "",
+            "order": ""
+        }, status=200)
+
+
+class EditSimpleHubView(HTTPMethodView):
+
+    async def post(self, request):
+
+        encoding = request.body.decode("utf-8")
+        data = json.loads(encoding)
+        username = data['username']
+        user = request.app.session.query(User). \
+            filter(User.username == username). \
+            filter(User.deleted_at == None).one_or_none()
+        # User Found
+        if user:
+            pass
+        # No User Found
+        else:
+            pass
+
+        return sanic_response_json({
+            "title": "",
+            "description": "",
+            "is_published": "",
+            "hub_url": "",
+            "image_url": "",
+            "order": ""
+        }, status=200)
+
+
 class AppleAppSiteAssociationView(HTTPMethodView):
 
     async def get(self, request):

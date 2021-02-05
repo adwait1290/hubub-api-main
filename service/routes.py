@@ -12,7 +12,8 @@ from .views import (
     ConfirmProximityView,
     ApplicationStatusView,
     GetAuthStatus,
-    ProximityDataView)
+    ProximityDataView, CreateDetailedHubView, EditDetailedHubView, CreateSimpleHubView, EditSimpleHubView, HomeView,
+    LoginView, RegisterView)
 
 
 __all__ = (
@@ -24,27 +25,45 @@ def setup_routes(blueprint):
     # Authentication Views
     blueprint.add_route(ApiVersionView.as_view(), '/version', methods=['GET', 'OPTIONS'])
 
-    blueprint.add_route(AuthenticationLoginView.as_view(), '/accounts/users/<username>/login', methods=['POST', 'OPTIONS'])
-    blueprint.add_route(AuthenticationLogoutView.as_view(), '/accounts/users/<username>/logout', methods=['GET', 'POST', 'OPTIONS'])
-    blueprint.add_route(AuthenticationStatusView.as_view(), 'authentication/status/<auth_request_id>',
-                        methods=['POST','GET','OPTIONS'])
-    blueprint.add_route(ValidateAuthStatus.as_view(), '/authentication/validate_status/<auth_request_id>',
-                        methods=['POST', 'OPTIONS'])
-    blueprint.add_route(DestroyAuthSession.as_view(), '/authentication/destroy_session/<auth_request_id>',
-                        methods=['POST', 'OPTIONS'])
-    # Validation Views
-    blueprint.add_route(RequestValidationView.as_view(), '/authentication/validations/<auth_request_id>',
-                        methods=['POST', 'OPTIONS'])
-    # Authentication Ping
-    blueprint.add_route(AuthenticationPingView.as_view(), '/authentication/ping/<user_id>', methods=['POST', 'OPTIONS'])
-    # Confirm Proximity
-    blueprint.add_route(ConfirmProximityView.as_view(), '/confirm_proximity/<auth_request_id>', methods=['POST', 'OPTIONS'])
-    # Application Status
-    blueprint.add_route(ApplicationStatusView.as_view(), '/application_status', methods=['POST', 'OPTIONS'])
-    blueprint.add_route(GetAuthStatus.as_view(), '/authentication/get_status/<auth_request_id>', methods=['POST', 'OPTIONS'])
 
-    # Proximity View
-    blueprint.add_route(ProximityDataView.as_view(), '/authentication/proximity/<auth_request_id>', methods=['POST', 'OPTIONS'])
+
+    # Hubub Views
+    blueprint.add_route(RegisterView.as_view(), '/register',
+                        methods=['POST', 'OPTIONS'])
+    blueprint.add_route(LoginView.as_view(), '/login',
+                        methods=['POST', 'OPTIONS'])
+    blueprint.add_route(CreateDetailedHubView.as_view(), '/create_detailed_hub',
+                        methods=['GET', 'OPTIONS'])
+    blueprint.add_route(EditDetailedHubView.as_view(), '/edit_detailed_hub',
+                        methods=['GET', 'OPTIONS'])
+    blueprint.add_route(CreateSimpleHubView.as_view(), '/create_simple_hub',
+                        methods=['GET', 'OPTIONS'])
+    blueprint.add_route(EditSimpleHubView.as_view(), '/edit_simple_hub',
+                        methods=['GET', 'OPTIONS'])
+    blueprint.add_route(HomeView.as_view(), '/home',
+                        methods=['GET', 'OPTIONS'])
+
+    # blueprint.add_route(AuthenticationLoginView.as_view(), '/accounts/users/<username>/login', methods=['POST', 'OPTIONS'])
+    # blueprint.add_route(AuthenticationLogoutView.as_view(), '/accounts/users/<username>/logout', methods=['GET', 'POST', 'OPTIONS'])
+    # blueprint.add_route(AuthenticationStatusView.as_view(), 'authentication/status/<auth_request_id>',
+    #                     methods=['POST','GET','OPTIONS'])
+    # blueprint.add_route(ValidateAuthStatus.as_view(), '/authentication/validate_status/<auth_request_id>',
+    #                     methods=['POST', 'OPTIONS'])
+    # blueprint.add_route(DestroyAuthSession.as_view(), '/authentication/destroy_session/<auth_request_id>',
+    #                     methods=['POST', 'OPTIONS'])
+    # # Validation Views
+    # blueprint.add_route(RequestValidationView.as_view(), '/authentication/validations/<auth_request_id>',
+    #                     methods=['POST', 'OPTIONS'])
+    # # Authentication Ping
+    # blueprint.add_route(AuthenticationPingView.as_view(), '/authentication/ping/<user_id>', methods=['POST', 'OPTIONS'])
+    # # Confirm Proximity
+    # blueprint.add_route(ConfirmProximityView.as_view(), '/confirm_proximity/<auth_request_id>', methods=['POST', 'OPTIONS'])
+    # # Application Status
+    # blueprint.add_route(ApplicationStatusView.as_view(), '/application_status', methods=['POST', 'OPTIONS'])
+    # blueprint.add_route(GetAuthStatus.as_view(), '/authentication/get_status/<auth_request_id>', methods=['POST', 'OPTIONS'])
+    #
+    # # Proximity View
+    # blueprint.add_route(ProximityDataView.as_view(), '/authentication/proximity/<auth_request_id>', methods=['POST', 'OPTIONS'])
 
 
 

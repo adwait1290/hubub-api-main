@@ -2,6 +2,7 @@
 import logging
 import os
 
+import uvloop
 import configparser
 
 from sanic import Blueprint
@@ -38,7 +39,9 @@ if 'PORT' in os.environ:
     port = os.environ['PORT']
 else:
     port = hububconfig.get('RUN_SERVICE_ON_PORT')
-asyncio.set_event_loop(asyncio.get_event_loop())
+
+loop = uvloop.new_event_loop()
+asyncio.set_event_loop(loop)
 
 config = configparser.ConfigParser()
 config.read('.bumpversion.cfg')

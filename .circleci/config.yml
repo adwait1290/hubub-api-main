@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.6.12
+      - image: circleci/python:3.7.10
     working_directory: ~/hubub-api-main
     steps:
       - checkout
@@ -32,7 +32,7 @@ jobs:
 
   tests:
     docker:
-      - image: circleci/python:3.6.12
+      - image: circleci/python:3.7.10
         environment:
           APP_CONFIG_FILE: "dev.py"
     working_directory: ~/hubub-api-main
@@ -70,7 +70,7 @@ jobs:
 
   release_dev:
     docker:
-      - image: circleci/python:3.6.12
+      - image: circleci/python:3.7.10
     working_directory: ~/hubub-api-main
     steps:
       - checkout
@@ -126,7 +126,7 @@ jobs:
 
   release_stage:
     docker:
-      - image: circleci/python:3.6.12
+      - image: circleci/python:3.7.10
     working_directory: ~/hubub-api-main
     steps:
       - checkout
@@ -171,7 +171,7 @@ jobs:
 
   release_prod:
     docker:
-      - image: circleci/python:3.6.12
+      - image: circleci/python:3.7.10
     working_directory: ~/hubub-api-main
     steps:
       - checkout

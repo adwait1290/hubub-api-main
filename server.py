@@ -9,15 +9,15 @@ from sanic import Blueprint
 from sanic import Sanic
 
 
-from .hubub_common.models import db
+from hubub_common.models import db
 
-from .hubub_common.util import from_pyfile
+from hubub_common.util import from_pyfile
 
-from .hubub_common.models import init_listeners
+from hubub_common.models import init_listeners
 
-from .service.routes import setup_routes, setup_routes2
+from service.routes import setup_routes, setup_routes2
 
-from .hubub_common.middlewares import setup_middleware
+from hubub_common.middlewares import setup_middleware
 
 
 if 'APP_LOGGER' in os.environ:

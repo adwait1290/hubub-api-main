@@ -23,5 +23,4 @@ websockets
 nose
 ua-parser
 user-agents
-uvloop
 pyYaml

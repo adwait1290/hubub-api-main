@@ -2,9 +2,9 @@ import config.base
 
 SERVICE_NAME = "Main Service"
 
-SQLALCHEMY_DATABASE_URI =
-DEVOPS_DATABASE_URI =
-REDIS_URL =
+SQLALCHEMY_DATABASE_URI = "postgres://jchkgjrtgsjepo:58355f2ef4d6f5ab28d4182283ec8e693e80c21ea2fa91e019d61bc00584b2f1@ec2-54-90-13-87.compute-1.amazonaws.com:5432/dcs6dr2fbu9ssp?application_name=hubub"
+DEVOPS_DATABASE_URI = ""
+REDIS_URL = ""
 
 FRONTEND_DEFAULT_URL = "https://dashboard.hubub.io"
 GEO_SERVICE_BASE_URL = "https://geo.hubub.net"

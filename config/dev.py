@@ -2,7 +2,7 @@ import config.base
 
 SERVICE_NAME = "Main Service"
 
-SQLALCHEMY_DATABASE_URI = "postgres://dnqaegxogutpou:118836a3721f7f599847a52736e03faf2f30dcab1813fed89a047a945fa814c9@ec2-54-211-55-24.compute-1.amazonaws.com:5432/dd3ptlt7l9mgtd?application_name=hubub"
+SQLALCHEMY_DATABASE_URI = "postgres://xmogusmazzaqdv:ace6b8a53165f7bd9e1bc6e90ffcf6fd44efa380d7a300ba29dfaa0636fc4492@ec2-35-174-118-71.compute-1.amazonaws.com:5432/d4bm0r2d9qgnnb?application_name=hubub"
 # DEVOPS_DATABASE_URI =
 # REDIS_URL =
 
@@ -45,6 +45,9 @@ PROXIMITY_RSSI_RANGE = 20
 AUTHENTICATION_TIMEOUT_SECONDS = 40
 
 SECRET_KEY = 'cd15c9878c061b5492eb44897fa95cbf78bbf606c3eb81d785beda009097c097'
+
+APP_CLIENT_ID = '80545254'
+APP_CLIENT_SECRET = 'CFeiB1AN3U1VZKI4'
 
 aws_access_key = "AKIAJEJEG42DJP5EIOIQ"
 aws_secret_key = "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"

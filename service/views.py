@@ -75,9 +75,15 @@ class ApiVersionView(HTTPMethodView):
 class RegisterView(HTTPMethodView):
 
     async def post(self, request):
+        try:
+            verified = verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
+            if not verified:
+                raise Exception()
+        except Exception as e:
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
 
         return sanic_response_json({"device": {
-            "status": "Dummy User Created Response",
+            "status": "User Created ",
         }
         }, status=200)
 
@@ -101,6 +107,7 @@ class HomeView(HTTPMethodView):
 
         encoding = request.body.decode("utf-8")
         data = json.loads(encoding)
+        verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
         username = data['username']
         user = request.app.session.query(User). \
             filter(User.username == username). \

@@ -8,17 +8,13 @@ import configparser
 from sanic import Blueprint
 from sanic import Sanic
 
-
-from hubub_common.models import db
-
 from hubub_common.util import from_pyfile
 
-from hubub_common.models import init_listeners
+from hubub_common.models import init_listeners, db
 
 from service.routes import setup_routes, setup_routes2
 
 from hubub_common.middlewares import setup_middleware
-
 
 if 'APP_LOGGER' in os.environ:
     app_logger = int(os.environ['APP_LOGGER'])
@@ -47,14 +43,15 @@ config = configparser.ConfigParser()
 config.read('.bumpversion.cfg')
 version = config._sections['bumpversion']['current_version']
 
-engine, session = loop.run_until_complete(db.init_pg(hububconfig=hububconfig, version=version, recreate_schema=hububconfig.get('RECREATE_SCHEMA')))
+engine, session = loop.run_until_complete(
+    db.init_pg(hububconfig=hububconfig, version=version, recreate_schema=hububconfig.get('RECREATE_SCHEMA')))
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
-    level=app_logger,datefmt='%Y-%m-%d %H:%M:%S')
+                    level=app_logger, datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger().setLevel(level=app_logger)
 
 service = Sanic(hububconfig.get('SERVICE_NAME'))
-print ('Kicking off: ' + service.name)
+print('Kicking off: ' + service.name)
 service.logger = logging.getLogger()
 service.version = version
 service.environment = environment
@@ -81,7 +78,6 @@ service.blueprint(hububVersion2)
 
 setup_middleware(service)
 
-
 if __name__ == '__main__':
-    #start the app
-    service.run(debug=hububconfig.get('DEBUG_SERVICE'),host=hububconfig.get('DEBUG_HOST'),port=port)
+    # start the app
+    service.run(debug=hububconfig.get('DEBUG_SERVICE'), host=hububconfig.get('DEBUG_HOST'), port=port)

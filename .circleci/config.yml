@@ -6,13 +6,6 @@ jobs:
     working_directory: ~/hubub-api-main
     steps:
       - checkout
-      - run:
-          name: get submodules
-          command: |
-            git config --global user.name "adwait1290"
-            git config --global user.email "adwaitathale@gmail.com"
-            git config --global user.password $GITHUB_PASSWORD
-            git submodule sync && git submodule update --init
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -38,13 +31,6 @@ jobs:
     working_directory: ~/hubub-api-main
     steps:
       - checkout
-      - run:
-          name: get submodules
-          command: |
-            git config --global user.name "adwait1290"
-            git config --global user.email "adwaitathale@gmail.com"
-            git config --global user.password $GITHUB_PASSWORD
-            git submodule sync && git submodule update --init
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "requirements.txt" }}
@@ -74,12 +60,6 @@ jobs:
     working_directory: ~/hubub-api-main
     steps:
       - checkout
-      - run:
-          name: get submodules
-          command: |
-            git config --global user.name "adwait1290"
-            git config --global user.email "adwaitathale@gmail.com"
-            git config --global user.password $GITHUB_PASSWORD
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -127,12 +107,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: get submodules
-          command: |
-            git config --global user.name "adwait1290"
-            git config --global user.email "adwaitathale@gmail.com"
-            git config --global user.password $GITHUB_PASSWORD
-      - run:
           name: Install Dependencies
           command: |
             python3 -m venv venv
@@ -167,13 +141,6 @@ jobs:
     working_directory: ~/hubub-api-main
     steps:
       - checkout
-      - run:
-          name: get submodules
-          command: |
-            git config --global user.name "adwait1290"
-            git config --global user.email "adwaitathale@gmail.com"
-            git config --global user.password $GITHUB_PASSWORD
-
       # Download and cache dependencies
       - restore_cache:
           keys:

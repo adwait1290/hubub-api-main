@@ -9,13 +9,13 @@ from sanic import Blueprint
 from sanic import Sanic
 
 
-from .hubub_common.models import db
+from hubub_api_main.hubub_common.models import db
 
-from .hubub_common.util import from_pyfile
+from hubub_api_main.hubub_common.util import from_pyfile
 
-from .hubub_common.models import init_listeners
+from hubub_api_main.hubub_common.models import init_listeners
 
-from .service.routes import setup_routes, setup_routes2
+from hubub_api_main.service.routes import setup_routes, setup_routes2
 
 from hubub_common.middlewares import setup_middleware
 

@@ -1,25 +1,20 @@
 # -*- coding: utf-8 -*-
-import logging
 import os.path
 import re
-import threading
-import urllib
 import time
-import requests
+import urllib
 
+import requests
 
 requests.packages.urllib3.disable_warnings()
 
-from sqlalchemy.orm import load_only, Load
-from sqlalchemy import or_, desc, any_, update, and_
-from sqlalchemy.sql.expression import bindparam, and_
+from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
 from urllib.parse import quote
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from sanic.response import json as sanic_response_json, HTTPResponse
-from sanic.response import html
+from sanic.response import HTTPResponse
 from sanic.views import HTTPMethodView
 
 from .util import *
@@ -27,23 +22,19 @@ from .util import *
 from hubub_common.redis import *
 
 from hubub_common.exceptions import (
-    InvalidCredentialsException,
     BaseAuthenticationException,
 )
 
 from hubub_common.models import (
     User,
     Authentication,
-    AuthenticationSchema,
     AuthenticationStatus,
     AuthenticationResult,
     AuthenticationLoginSchema,
     Device,
-    UserDevice,
     DeviceType,
     RegistrationStatus,
-    AuthenticationSessionStatus,
-    AuthenticationMethod
+    AuthenticationSessionStatus
 )
 
 from hubub_common.util import (
@@ -52,7 +43,8 @@ from hubub_common.util import (
     verify_authentication_headers,
 )
 
-from hubub_common.utils.authentication import get_authentication_ping_by_user_id, save_authentication, record_geolocation
+from hubub_common.utils.authentication import get_authentication_ping_by_user_id, save_authentication, \
+    record_geolocation
 
 from hubub_common.exceptions import (
     handle_response_on_error,
@@ -60,7 +52,6 @@ from hubub_common.exceptions import (
 )
 
 from hubub_common.s3access import *
-
 
 AUTH_STATUS_SUCCESS = "authentication_success"
 AUTH_STATUS_FAILED = "authentication_failed"
@@ -76,7 +67,8 @@ class RegisterView(HTTPMethodView):
 
     async def post(self, request):
         try:
-            verified = verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
+            verified = verify_authentication_headers(request.app, request.headers,
+                                                     request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
             if not verified:
                 raise Exception()
         except Exception as e:
@@ -91,7 +83,6 @@ class RegisterView(HTTPMethodView):
 class LoginView(HTTPMethodView):
 
     async def post(self, request):
-
         encoding = request.body.decode("utf-8")
         data = json.loads(encoding)
 
@@ -107,7 +98,8 @@ class HomeView(HTTPMethodView):
 
         encoding = request.body.decode("utf-8")
         data = json.loads(encoding)
-        verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
+        verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'),
+                                      request.url)
         username = data['username']
         user = request.app.session.query(User). \
             filter(User.username == username). \
@@ -141,7 +133,7 @@ class HomeView(HTTPMethodView):
                     }, {}
                 ]
             }
-        }, status=200)
+            }, status=200)
 
 
 class CreateDetailedHubView(HTTPMethodView):
@@ -256,7 +248,7 @@ class AppleAppSiteAssociationView(HTTPMethodView):
     async def get(self, request):
         current_dir = os.path.abspath(os.curdir)
         file = 'apple-app-site-association.json'
-        dir = os.path.join(current_dir, 'hubub_common','apple/%s' % file)
+        dir = os.path.join(current_dir, 'hubub_common', 'apple/%s' % file)
 
         logging.getLogger().info("Loading apple app site association file {}".dir)
 
@@ -303,13 +295,13 @@ class AuthenticationLoginView(HTTPMethodView):
 
         try:
             user = request.app.session.query(User). \
-                filter(User.username == username).\
+                filter(User.username == username). \
                 filter(User.deleted_at == None).one_or_none()
             if user:
-                    # self.run_kill(request, authentication_active)
-                    # for i in range(authentication_active):
-                    #     t = threading.Thread(target=self.worker, args=(authentication_active[i],))
-                    #     t.start()
+                # self.run_kill(request, authentication_active)
+                # for i in range(authentication_active):
+                #     t = threading.Thread(target=self.worker, args=(authentication_active[i],))
+                #     t.start()
                 # try:
                 #     update_result = request.app.session.query(Authentication). \
                 #         filter(
@@ -323,12 +315,12 @@ class AuthenticationLoginView(HTTPMethodView):
                 #     logging.getLogger().error("Failed to close existing sessions")
                 #     request.app.session.rollback()
 
-
                 try:
                     devices = request.app.session.query(Device.type, Device.registration_status,
-                                                    Device.push_notification_certificate_id, Device.deleted_at).join(UserDevice).filter(
-                                                    UserDevice.user_id == user.id).\
-                                                    filter(Device.deleted_at == None).all()
+                                                        Device.push_notification_certificate_id,
+                                                        Device.deleted_at).join(UserDevice).filter(
+                        UserDevice.user_id == user.id). \
+                        filter(Device.deleted_at == None).all()
                 except Exception as e:
                     logging.getLogger().info("Alchemy Exception: {}".format(e))
                     request.app.session.rollback()
@@ -363,13 +355,13 @@ class AuthenticationLoginView(HTTPMethodView):
         auth_request_id = generate_secret_key()
 
         authentication = save_authentication(
-                                request=request,
-                                auth_request_id=auth_request_id,
-                                authentication_method=authentication_login['communication']['method'],
-                                user_agent=request.headers['user-agent'],
-                                user_id=user.id,
-                                push_notification_certificate_id=push_notification_certificate_id
-                            )
+            request=request,
+            auth_request_id=auth_request_id,
+            authentication_method=authentication_login['communication']['method'],
+            user_agent=request.headers['user-agent'],
+            user_id=user.id,
+            push_notification_certificate_id=push_notification_certificate_id
+        )
 
         logging.getLogger().info(
             "Authenticating user with username={0} and data {1}"
@@ -401,7 +393,7 @@ class AuthenticationLoginView(HTTPMethodView):
                 request,
                 user_id=user.id,
                 auth_request_id=auth_request_id,
-                push_notification_certificate_id = push_notification_certificate_id,
+                push_notification_certificate_id=push_notification_certificate_id,
                 requested_data=authentication_login['requested_data'],
                 validation=json.dumps(validation_data),
                 communication=authentication_login['communication']
@@ -426,18 +418,18 @@ class AuthenticationLoginView(HTTPMethodView):
             desktop_notifications = 0
             mobile_notifications = 0
         response_body = json.dumps({
-                                    "user_data": {
-                                        "account_name": account_name,
-                                        "username": username
-                                    },
-                                    "auth_request_id": auth_request_id,
-                                    "validation_prefix": validation_prefix,
-                                    "validation": json.dumps(request.json['validation']),
-                                    "validation_data_secret": validation_data_secret,
-                                    "communication": json.dumps(request.json['communication']),
-                                    "desktop_notifications": desktop_notifications,
-                                    "mobile_notifications": mobile_notifications
-                                    })
+            "user_data": {
+                "account_name": account_name,
+                "username": username
+            },
+            "auth_request_id": auth_request_id,
+            "validation_prefix": validation_prefix,
+            "validation": json.dumps(request.json['validation']),
+            "validation_data_secret": validation_data_secret,
+            "communication": json.dumps(request.json['communication']),
+            "desktop_notifications": desktop_notifications,
+            "mobile_notifications": mobile_notifications
+        })
 
         authentication_response = HTTPResponse()
         authentication_response.headers['X-hubub-Authentication-Timestamp'] = str(int(time.time()))
@@ -447,8 +439,6 @@ class AuthenticationLoginView(HTTPMethodView):
         authentication_response.content_type = 'application/json; charset=utf-8'
         authentication_response.body = response_body.encode()
 
-
-
         return authentication_response
 
 
@@ -456,8 +446,8 @@ class AuthenticationLogoutView(HTTPMethodView):
 
     async def post(self, request, username):
         if (
-            request.method == 'POST'
-            and str(request.url).endswith('accounts')
+                request.method == 'POST'
+                and str(request.url).endswith('accounts')
         ):
             if not request.cookies:
                 raise BaseHTTPException({
@@ -494,10 +484,9 @@ class AuthenticationLogoutView(HTTPMethodView):
 
         logging.getLogger().info(
             "Got POST request for logout with username={}"
-            .format(username))
+                .format(username))
 
-
-        return sanic_response_json({'status':204})
+        return sanic_response_json({'status': 204})
 
 
 class AuthenticationStatusView(HTTPMethodView):
@@ -516,10 +505,11 @@ class AuthenticationStatusView(HTTPMethodView):
         logging.getLogger().info(
             "Getting authentication request status for auth_request_id={} and "
             "authentication_status_secret={} using hubub client"
-            .format(auth_request_id, data["authentication_status_secret"]))
+                .format(auth_request_id, data["authentication_status_secret"]))
 
         try:
-            authentication_status_server_secret = await redisget(request.app, auth_request_id, RedisDatabase.Authentication)
+            authentication_status_server_secret = await redisget(request.app, auth_request_id,
+                                                                 RedisDatabase.Authentication)
             if not authentication_status_server_secret:
                 logging.getLogger().warn("Could not find the authentication_status_secret on the Redis Database")
 
@@ -539,7 +529,7 @@ class AuthenticationStatusView(HTTPMethodView):
                 authenticated, status = False, AUTH_STATUS_FAILED
 
             logging.getLogger().info("SENDING BACK DATA:{}".format(data))
-            return sanic_response_json( {
+            return sanic_response_json({
                 "authentication_status": {
                     "authenticated": authenticated,
                     "status": status,
@@ -549,7 +539,7 @@ class AuthenticationStatusView(HTTPMethodView):
         except Exception as exc:
             logging.getLogger().error(
                 "Got an exception during getting authentication request status: {}"
-                .format(exc))
+                    .format(exc))
 
 
 class ValidateAuthStatus(HTTPMethodView):
@@ -558,9 +548,9 @@ class ValidateAuthStatus(HTTPMethodView):
         authenticated = False
 
         try:
-            authentication = request.app.session.query(Authentication).\
-                filter(Authentication.auth_request_id == auth_request_id).\
-                filter(Authentication.deleted_at == None).\
+            authentication = request.app.session.query(Authentication). \
+                filter(Authentication.auth_request_id == auth_request_id). \
+                filter(Authentication.deleted_at == None). \
                 one_or_none()
             request.app.session.flush()
 
@@ -587,14 +577,13 @@ class ValidateAuthStatus(HTTPMethodView):
                         request.app.session.commit()
                         request.app.session.flush()
                         response = {"authentication_status": {
-                                        "authenticated": authenticated,
-                                        "session_status": authentication.authentication_session_status
-                                            }
-                                    }
+                            "authenticated": authenticated,
+                            "session_status": authentication.authentication_session_status
+                        }
+                        }
                     except Exception as e:
                         logging.getLogger().warn("SQLALCHEMY ERROR {}".format(e))
                         request.app.session.rollback()
-
 
                     return sanic_response_json(response)
 
@@ -607,19 +596,19 @@ class ValidateAuthStatus(HTTPMethodView):
                         request.app.session.commit()
                         request.app.session.flush()
                         response = {"authentication_status": {
-                                                    "authenticated": authenticated,
-                                                    "session_status": authentication.authentication_session_status
-                                                        }
-                                                }
+                            "authenticated": authenticated,
+                            "session_status": authentication.authentication_session_status
+                        }
+                        }
                     except Exception as e:
                         logging.getLogger().warn("SQLALCHEMY ERROR {}".format(e))
                         request.app.session.rollback()
 
-
                     return sanic_response_json(response)
 
             else:
-                logging.getLogger().info("There is not auth_secret on the redis database with auth_request_id={}".format(auth_request_id))
+                logging.getLogger().info(
+                    "There is not auth_secret on the redis database with auth_request_id={}".format(auth_request_id))
 
                 try:
                     authentication.authentication_session_status = AuthenticationSessionStatus.inactive.name
@@ -627,10 +616,10 @@ class ValidateAuthStatus(HTTPMethodView):
                     request.app.session.commit()
                     request.app.session.flush()
                     response = {"authentication_status": {
-                                                    "authenticated": authenticated,
-                                                    "session_status": authentication.authentication_session_status
-                                                        }
-                                                }
+                        "authenticated": authenticated,
+                        "session_status": authentication.authentication_session_status
+                    }
+                    }
                 except Exception as e:
                     logging.getLogger().warn("SQLALCHEMY ERROR {}".format(e))
                     request.app.session.rollback()
@@ -644,9 +633,9 @@ class GetAuthStatus(HTTPMethodView):
         authenticated = False
 
         try:
-            authentication = request.app.session.query(Authentication).\
-                filter(Authentication.auth_request_id == auth_request_id).\
-                filter(Authentication.deleted_at == None).\
+            authentication = request.app.session.query(Authentication). \
+                filter(Authentication.auth_request_id == auth_request_id). \
+                filter(Authentication.deleted_at == None). \
                 one_or_none()
             request.app.session.flush()
 
@@ -684,7 +673,6 @@ class GetAuthStatus(HTTPMethodView):
                     logging.getLogger().error("Unable to update authentication session status {}".format(e))
                     request.app.session.rollback()
                     return sanic_response_json({"status": "False"})
-
 
             response = {"authentication_status": {
                 "authenticated": authenticated,
@@ -736,7 +724,6 @@ class DestroyAuthSession(HTTPMethodView):
             return sanic_response_json({"status": "False"})
 
 
-
 class AuthenticationPingView(HTTPMethodView):
 
     # @async_validate_strict_schema(AuthenticationStatusSchema())
@@ -763,7 +750,7 @@ class AuthenticationPingView(HTTPMethodView):
         except Exception as exc:
             logging.getLogger().error(
                 "Got an exception during authentication ping: {}"
-                            .format(exc))
+                    .format(exc))
             return sanic_response_json({
                 "false"
             })
@@ -780,7 +767,7 @@ class RequestValidationView(HTTPMethodView):
         data = json.loads(encoding)
         logging.getLogger().info(
             "Got request with auth_request_id={} and parameters={}"
-            .format(auth_request_id, data))
+                .format(auth_request_id, data))
 
         try:
             authentication = request.app.session.query(Authentication).filter(
@@ -788,15 +775,16 @@ class RequestValidationView(HTTPMethodView):
                 filter(Authentication.deleted_at == None).one_or_none()
 
             if not authentication:
-                logging.getLogger().warn("AUTHENTICATION NOT FOUND!! COULD NOT UPDATE STATUS OF AUTH WITH AUTH_REQUEST_ID={}"
-                                        .format(auth_request_id))
+                logging.getLogger().warn(
+                    "AUTHENTICATION NOT FOUND!! COULD NOT UPDATE STATUS OF AUTH WITH AUTH_REQUEST_ID={}"
+                        .format(auth_request_id))
                 return sanic_response_json({
-                                    "authentication_status": {
-                                                    "authenticated": False,
-                                                    "session_status": "",
-                                                    "authentication_status_secret": "",
-                                                        }
-                                                })
+                    "authentication_status": {
+                        "authenticated": False,
+                        "session_status": "",
+                        "authentication_status_secret": "",
+                    }
+                })
             authentication.authentication_status = AuthenticationStatus.validation_requested.name
             authentication.updated_at = datetime.utcnow()
             authentication.save()
@@ -811,7 +799,6 @@ class RequestValidationView(HTTPMethodView):
         validation_data = escaped_validation_data.strip()
 
         if status != 200:
-
             return sanic_response_json(validation_data, status=status)
 
         validation = json.loads(validation_data)
@@ -841,8 +828,8 @@ class RequestValidationView(HTTPMethodView):
 
         auth_status_response = await make_authentication_status_secret(
             request, auth_request_id, validation['validation_data_secret']
-            )
-        authentication_status_secret = json.loads(auth_status_response.body.decode('utf-8')).\
+        )
+        authentication_status_secret = json.loads(auth_status_response.body.decode('utf-8')). \
             get("authentication_status_secret")
 
         try:
@@ -861,12 +848,12 @@ class RequestValidationView(HTTPMethodView):
             request.app.session.rollback()
 
         return sanic_response_json({
-                                    "authentication_status": {
-                                                    "authenticated": True,
-                                                    "session_status": authentication.authentication_session_status,
-                                                    "authentication_status_secret": authentication_status_secret,
-                                                        }
-                                                })
+            "authentication_status": {
+                "authenticated": True,
+                "session_status": authentication.authentication_session_status,
+                "authentication_status_secret": authentication_status_secret,
+            }
+        })
 
 
 # ***********************************************
@@ -886,7 +873,7 @@ class ConfirmProximityView(HTTPMethodView):
                            Authentication.authentication_session_status == AuthenticationSessionStatus.walkaway.name,
 
                            Authentication.authentication_session_status == AuthenticationSessionStatus.idle.name)). \
-                filter(Authentication.auth_request_id == auth_request_id).\
+                filter(Authentication.auth_request_id == auth_request_id). \
                 one()
         except Exception as e:
             logging.getLogger().info("Alchemy Exception: {}".format(e))
@@ -934,8 +921,9 @@ class ConfirmProximityView(HTTPMethodView):
             logging.getLogger().info("Exception: {}".format(e))
 
             return sanic_response_json({
-                        "status": "No Authentications to Update"
-                    }, status=200)
+                "status": "No Authentications to Update"
+            }, status=200)
+
 
 # ***********************************************
 # Application Status Views
@@ -965,9 +953,10 @@ class ApplicationStatusView(HTTPMethodView):
                 if (status):
                     authentications = request.app.session.query(Authentication). \
                         filter(Authentication.authentication_session_status == AuthenticationSessionStatus.idle.name). \
-                        filter(Authentication.mobile_device.contains(device.device_id)).\
+                        filter(Authentication.mobile_device.contains(device.device_id)). \
                         all()
-                    logging.getLogger().info("Status is true; Got the following authentications: {}".format(authentications))
+                    logging.getLogger().info(
+                        "Status is true; Got the following authentications: {}".format(authentications))
                 else:
                     authentications = request.app.session.query(Authentication). \
                         filter(
@@ -975,7 +964,8 @@ class ApplicationStatusView(HTTPMethodView):
                             Authentication.authentication_session_status == AuthenticationSessionStatus.active.name)). \
                         filter(Authentication.mobile_device.contains(device.device_id)). \
                         all()
-                    logging.getLogger().info("Status is false; Got the following authentication: {}".format(authentications))
+                    logging.getLogger().info(
+                        "Status is false; Got the following authentication: {}".format(authentications))
                 if authentications:
                     try:
                         for authentication in authentications:
@@ -1115,7 +1105,8 @@ class IdentificationService():
         data['validation_secret'] = validation_json['validation_secret']
         logging.getLogger().info("Sending request to {} to make push notification with data - {}".format(url, data))
         status = await redisset(request.app, auth_request_id, json.dumps(data), RedisDatabase.Authentication)
-        validation_status = await redisset(request.app, auth_request_id, data['validation_data_secret'], RedisDatabase.Session)
+        validation_status = await redisset(request.app, auth_request_id, data['validation_data_secret'],
+                                           RedisDatabase.Session)
         headers['Content-Type'] = "text/html"
         request_data = json.dumps(data)
         logging.getLogger().info("Final request_data = {}".format(request_data))
@@ -1131,6 +1122,7 @@ class IdentificationService():
 
         else:
             return None
+
 
 class ProximityDataView(HTTPMethodView):
 
@@ -1155,8 +1147,9 @@ class ProximityDataView(HTTPMethodView):
             if authentication is not None:
 
                 if authentication.authentication_session_status == AuthenticationSessionStatus.expired.name or \
-                   authentication.authentication_session_status == AuthenticationSessionStatus.closed.name:
-                    logging.getLogger().info("Session with {} is expired oor closed".format(authentication.authentication_session_status))
+                        authentication.authentication_session_status == AuthenticationSessionStatus.closed.name:
+                    logging.getLogger().info(
+                        "Session with {} is expired oor closed".format(authentication.authentication_session_status))
                     return sanic_response_json({
                         "status": True, "action": "stop"
                     })
@@ -1168,22 +1161,21 @@ class ProximityDataView(HTTPMethodView):
                     using_default_power = True
                     base_power = request.app.hububconfig.get('PROXIMITY_DEFAULT_POWER')
                 else:
-                    logging.getLogger().info("Login RSSI before conversion is {} type is".format(base_power, type(base_power)))
+                    logging.getLogger().info(
+                        "Login RSSI before conversion is {} type is".format(base_power, type(base_power)))
                     base_power = int(base_power)
-                    logging.getLogger().info("Login RSSI after conversion is {} type is {}".format(base_power, type(base_power)))
+                    logging.getLogger().info(
+                        "Login RSSI after conversion is {} type is {}".format(base_power, type(base_power)))
 
+                # logging.getLogger().info( "Base RSSI = {}".format(base_power))
 
-
-                #logging.getLogger().info( "Base RSSI = {}".format(base_power))
-
-
-                #power_delta = await rssi_range_for_user(request, authentication.user_id, True)
+                # power_delta = await rssi_range_for_user(request, authentication.user_id, True)
                 power_delta = request.app.hububconfig.get('PROXIMITY_RSSI_RANGE')
-
 
                 min_power = abs(base_power - power_delta)
                 logging.getLogger().info(
-                    "Login RSSI = {} power delta = {} min power = {} default {}".format(base_power, power_delta, min_power, using_default_power))
+                    "Login RSSI = {} power delta = {} min power = {} default {}".format(base_power, power_delta,
+                                                                                        min_power, using_default_power))
                 # Get the rssi as an integer and check if it is high enough.
                 try:
                     rssi = abs(int(data['rssi']))
@@ -1207,14 +1199,13 @@ class ProximityDataView(HTTPMethodView):
                         "status": False, "action": "stop"
                     })
 
-                return sanic_response_json({ "status": True, "action": "continue" })
+                return sanic_response_json({"status": True, "action": "continue"})
             else:
                 logging.getLogger().error(
                     "Could not get authentication with auth_request_id={}".format(auth_request_id))
-                return sanic_response_json({"status": False, "action": "stop" })
+                return sanic_response_json({"status": False, "action": "stop"})
 
         except SQLAlchemyError as e:
             request.app.session.rollback()
             logging.getLogger().error("Could not get authentication with auth_request_id={}".format(auth_request_id))
             return sanic_response_json({"status": False, "action": "stop"})
-

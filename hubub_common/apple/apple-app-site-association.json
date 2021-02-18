@@ -1,0 +1,15 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "",
+                "paths": ["/device_register*", "/device_reset", "/activate_app", "/s/*"]
+            },
+            {
+                "appID": "",
+                "paths": [ "/device_register*", "/device_reset", "/activate_app", "/s/*"]
+            }
+        ]
+    }
+}

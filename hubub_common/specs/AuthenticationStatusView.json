@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Authentication Status API - Request schema.",
+  "description": "The Client Back-end's Authentication Status wishes to determine if the Authentication Request ID has passed authentication or not.",
+  "properties": {
+    "authentication_status_secret": {
+      "type": "string",
+      "minLength": 1,
+      "title": "Authentication_status_secret schema.",
+      "description": "Authentication Status Secret – Used to check the authentication status on the Authentication Status API",
+      "id": "https://api.hubub.com/v0.1/authentication_status_secret"
+    }
+  },
+  "id": "https://api.hubub.com/v0.1",
+  "required": [
+    "authentication_status_secret"
+  ]
+}

@@ -80,10 +80,6 @@ jobs:
             git config --global user.name "adwait1290"
             git config --global user.email "adwaitathale@gmail.com"
             git config --global user.password $GITHUB_PASSWORD
-            git submodule sync
-            git submodule update --init
-            cd hubub_common
-            git checkout dev
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -136,10 +132,6 @@ jobs:
             git config --global user.name "adwait1290"
             git config --global user.email "adwaitathale@gmail.com"
             git config --global user.password $GITHUB_PASSWORD
-            git submodule sync
-            git submodule update --init
-            cd hubub_common
-            git checkout stage
       - run:
           name: Install Dependencies
           command: |
@@ -181,10 +173,7 @@ jobs:
             git config --global user.name "adwait1290"
             git config --global user.email "adwaitathale@gmail.com"
             git config --global user.password $GITHUB_PASSWORD
-            git submodule sync
-            git submodule update --init
-            cd hubub_common
-            git checkout prod
+
       # Download and cache dependencies
       - restore_cache:
           keys:

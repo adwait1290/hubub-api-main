@@ -95,11 +95,13 @@ class LoginView(HTTPMethodView):
 class HomeView(HTTPMethodView):
 
     async def get(self, request):
-
-        encoding = request.body.decode("utf-8")
-        data = json.loads(encoding)
         verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'),
                                       request.url)
+        try:
+            encoding = request.body.decode("utf-8")
+            data = json.loads(encoding)
+        except Exception as e:
+            request.app.logger.info("Exception loading data :{0}".format(e))
         username = data['username']
         user = request.app.session.query(User). \
             filter(User.username == username). \

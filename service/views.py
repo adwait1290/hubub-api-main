@@ -107,12 +107,12 @@ class HomeView(HTTPMethodView):
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
 
-        # User Found
-        if user:
-            pass
-        # No User Found
-        else:
-            pass
+        # # User Found
+        # if user:
+        #     pass
+        # # No User Found
+        # else:
+        #     pass
 
         return sanic_response_json(
             {"hubs": {

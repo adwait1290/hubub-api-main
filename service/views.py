@@ -100,12 +100,13 @@ class HomeView(HTTPMethodView):
         try:
             encoding = request.body.decode("utf-8")
             data = json.loads(encoding)
+            username = data['username']
+            user = request.app.session.query(User). \
+                filter(User.username == username). \
+                filter(User.deleted_at == None).one_or_none()
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
-        username = data['username']
-        user = request.app.session.query(User). \
-            filter(User.username == username). \
-            filter(User.deleted_at == None).one_or_none()
+
         # User Found
         if user:
             pass

@@ -1,5 +1,6 @@
 from marshmallow import fields
 from marshmallow_sqlalchemy import ModelSchema
+from sqlalchemy_utils import PasswordType
 
 from .base import BaseModel
 from enum import Enum
@@ -35,7 +36,7 @@ class User(BaseModel):
     contact = relationship("Contact")
     contact_id = sa.Column(sa.ForeignKey('contact.id', ondelete='CASCADE'))
     email = sa.Column(sa.String, nullable=False)
-    password = sa.Column(sa.String, nullable=False,password=True)
+    password = sa.Column(sa.String, nullable=False)
     is_primary = sa.Column(sa.Boolean, default=False)
 
     idtoken = sa.Column(sa.String)
@@ -54,7 +55,7 @@ class UserSchema(ModelSchema):
     id = fields.Integer(required=False)
     username = fields.String(required=True)
     email = fields.String(required=False)
-    password = fields.String(required=False, password=True)
+    password = fields.String(required=True)
     is_primary = fields.Boolean(required=False)
     user_registration_status = fields.String(required=False)
     idtoken = sa.Column(sa.String)

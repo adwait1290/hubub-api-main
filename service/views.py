@@ -154,6 +154,20 @@ class HomeView(HTTPMethodView):
                 user_simplehubs = request.app.session.query(UserSimpleHub).\
                     filter(UserSimpleHub.user_id == user.id).\
                     all()
+                simple_hubs = []
+                for h in user_simplehubs:
+                    h0 = request.app.session.query(SimpleHub).\
+                        filter(SimpleHub.id == h.simple_hub_id).\
+                        first()
+                    if(h0):
+                        simple_hubs.append({
+                            "simplehub_id": h0.id,
+                            "title":h0.title,
+                            "description":h0.description,
+                            "hub_url": h0.hub_url,
+                            "order": h0.order,
+                            "image_url":h0.image_url,
+                        })
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
 
@@ -175,17 +189,7 @@ class HomeView(HTTPMethodView):
                      "order": ""
                      }, {}
                 ],
-                "simple_hubs": [
-                    {
-                        "hub_id": "",
-                        "title": "",
-                        "url_type": "",
-                        "is_published": "",
-                        "hub_url": "",
-                        "image_url": "",
-                        "order": ""
-                    }, {}
-                ]
+                "simple_hubs": simple_hubs
             }
             }, status=200)
 

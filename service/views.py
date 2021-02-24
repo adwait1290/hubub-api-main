@@ -187,7 +187,7 @@ class CreateDetailedHubView(HTTPMethodView):
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
         email = data['email']
         user = request.app.session.query(User). \
-            filter(User.email== username). \
+            filter(User.email== email). \
             filter(User.deleted_at == None).one_or_none()
         # User Found
         if user:

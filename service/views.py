@@ -67,17 +67,34 @@ class RegisterView(HTTPMethodView):
 
     async def post(self, request):
         try:
+            encoding = request.body.decode("utf-8")
+            data = json.loads(encoding)
+            request.app.logger.info("RegisterView hit with data={}".format(json.dumps(data)))
+        except Exception as e:
+            return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
+        try:
             verified = verify_authentication_headers(request.app, request.headers,
                                                      request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
             if not verified:
-                raise Exception()
+                request.app.logger.info("RegisterView Authentication Failed. Not Verified.")
+                return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+            request.app.logger.info("Creating User Now.")
+            user = User()
+            user.email = data['email']
+            user.password = data['password']
+            user.save()
+            request.app.session.commit()
+            request.app.session.flush()
+            request.app.logger.info("User Created for email:{0}".format(user.email))
+            return sanic_response_json({"device": {
+                "status": "User Created ",
+            }
+            }, status=200)
         except Exception as e:
+            logging.getLogger().warn("SQLALCHEMY ERROR RegisterView Exception:{}".format(e))
+            request.app.session.rollback()
             return sanic_response_json({"status": "there was a problem with your request"}, status=503)
 
-        return sanic_response_json({"device": {
-            "status": "User Created ",
-        }
-        }, status=200)
 
 
 class LoginView(HTTPMethodView):
@@ -95,15 +112,34 @@ class LoginView(HTTPMethodView):
 class HomeView(HTTPMethodView):
 
     async def get(self, request):
-        verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'),
+        verified = verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'),
                                       request.url)
         try:
             encoding = request.body.decode("utf-8")
             data = json.loads(encoding)
-            username = data['username']
+        except Exception as e:
+            return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
+        try:
+            # Check if user exists
+            email = data['email']
+            # Check if authentication worked
+            if not verified:
+                return sanic_response_json({
+                    "status": "Not Authorized"
+                }, 503)
+
             user = request.app.session.query(User). \
-                filter(User.username == username). \
+                filter(User.email == email). \
                 filter(User.deleted_at == None).one_or_none()
+            if not user:
+                return sanic_response_json({
+                    "status": "No User Found"
+                }, 500)
+
+            # If user exists, go ahead and fill fields.
+            if user:
+
+                pass
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
 
@@ -198,7 +234,7 @@ class CreateSimpleHubView(HTTPMethodView):
 
         encoding = request.body.decode("utf-8")
         data = json.loads(encoding)
-        username = data['username']
+        email = data['email']
         user = request.app.session.query(User). \
             filter(User.username == username). \
             filter(User.deleted_at == None).one_or_none()

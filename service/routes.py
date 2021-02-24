@@ -41,7 +41,7 @@ def setup_routes(blueprint):
     blueprint.add_route(EditSimpleHubView.as_view(), '/edit_simple_hub',
                         methods=['GET', 'OPTIONS'])
     blueprint.add_route(HomeView.as_view(), '/home',
-                        methods=['GET', 'OPTIONS'])
+                        methods=['POST', 'OPTIONS'])
 
     # blueprint.add_route(AuthenticationLoginView.as_view(), '/accounts/users/<username>/login', methods=['POST', 'OPTIONS'])
     # blueprint.add_route(AuthenticationLogoutView.as_view(), '/accounts/users/<username>/logout', methods=['GET', 'POST', 'OPTIONS'])

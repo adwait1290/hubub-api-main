@@ -120,7 +120,7 @@ class LoginView(HTTPMethodView):
 
 class HomeView(HTTPMethodView):
 
-    async def get(self, request):
+    async def post(self, request):
         try:
             encoding = request.body.decode("utf-8")
             data = json.loads(encoding)

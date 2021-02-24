@@ -72,15 +72,15 @@ class RegisterView(HTTPMethodView):
             request.app.logger.warn("RegisterView hit with data={}".format(json.dumps(data)))
         except Exception as e:
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
-        # try:
-        #     verified = verify_authentication_headers(request.app, request.headers,
-        #                                              request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
-        #     if not verified:
-        #         request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
-        #         return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
-        # except Exception as e:
-        #     request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
-        #     return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        try:
+            verified = verify_authentication_headers(request.app, request.headers,
+                                                     request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
+            if not verified:
+                request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
+                return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        except Exception as e:
+            request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
+            return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
         try:
             request.app.logger.info("Creating User Now.")
             user = User()

@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 
 class SimpleHub(BaseModel):
-    __tablename__ = 'SimpleHub'
+    __tablename__ = 'simplehub'
     id = sa.Column(sa.Integer, primary_key=True, nullable=False)
     title = sa.Column(sa.String, nullable=True)
     description = sa.Column(sa.String, nullable=True)

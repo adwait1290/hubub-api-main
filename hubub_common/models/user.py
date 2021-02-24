@@ -43,7 +43,6 @@ class User(BaseModel):
 
     tags = relationship("UserTag", backref="user", uselist=True, lazy="dynamic")
 
-
     created_at = sa.Column(sa.DateTime, server_default=func.now())
     updated_at = sa.Column(sa.DateTime, server_default=func.now())
     deleted_at = sa.Column(sa.DateTime, nullable=True, server_default=None)

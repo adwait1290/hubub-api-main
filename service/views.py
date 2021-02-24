@@ -6,6 +6,8 @@ import urllib
 
 import requests
 
+from hubub_common.models.user_simple_hub import UserSimpleHub
+
 requests.packages.urllib3.disable_warnings()
 
 from sqlalchemy import or_
@@ -254,16 +256,42 @@ class CreateSimpleHubView(HTTPMethodView):
             filter(User.deleted_at == None).one_or_none()
         # User Found
         if not user:
-            return sanic_response_json({"status": "Not User found."}, 401)
-        new_simple_hub = SimpleHub()
-        new_simple_hub.title = data['title']
+            return sanic_response_json({"status": "No User found."}, 401)
+
+        user_hubs = request.app.session.query(UserSimpleHub). \
+            filter(UserSimpleHub.user_id == user.id) .\
+            filter(SimpleHub.deleted_at == None).\
+            all()
+        try:
+            new_simple_hub = SimpleHub()
+            new_simple_hub.title = data['title']
+            new_simple_hub.description = data['description']
+            new_simple_hub.is_published = data['is_published']
+            new_simple_hub.hub_url = data['hub_url']
+            new_simple_hub.order = len(user_hubs)
+            new_simple_hub.updated_at = datetime.utcnow()
+            new_simple_hub.created_at = datetime.utcnow()
+            new_simple_hub.save()
+            request.app.session.commit()
+            request.app.session.flush()
+        except Exception as e:
+            logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView Exception:{}".format(e))
+            request.app.session.rollback()
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
+        try:
+            user_simplehub = UserSimpleHub()
+            user_simplehub.user_id = user.id
+            user_simplehub.simple_hub_id = new_simple_hub.id
+            user_simplehub.save()
+            request.app.session.commit()
+            request.app.session.flush()
+            request.app.logger.info("New Simple Hub for email:{0}".format(user.email))
+        except Exception as e:
+            logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView Exception:{}".format(e))
+            request.app.session.rollback()
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
         return sanic_response_json({
-            "title": "",
-            "description": "",
-            "is_published": "",
-            "hub_url": "",
-            "image_url": "",
-            "order": ""
+            "status" : "Successfully Created Simple Hub"
         }, status=200)
 
 

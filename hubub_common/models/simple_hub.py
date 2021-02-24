@@ -19,6 +19,7 @@ class SimpleHub(BaseModel):
     __tablename__ = 'SimpleHub'
     id = sa.Column(sa.Integer, primary_key=True, nullable=False)
     title = sa.Column(sa.String, nullable=True)
+    description = sa.Column(sa.String, nullable=True)
     is_published = sa.Column(sa.Boolean, default=False)
     hub_url = sa.Column(sa.String, nullable=True)
     image_url = sa.Column(sa.String, nullable=True)
@@ -35,6 +36,7 @@ class SimpleHub(BaseModel):
 class SimpleHubSchema(ModelSchema):
     id = fields.Integer(required=False)
     title = fields.String(required=False)
+    description = fields.String(required=False)
     is_published = fields.Boolean(required=True)
     hub_url = fields.String(required=False)
     image_url = fields.String(required=False)

@@ -34,8 +34,8 @@ from hubub_common.models import (
     Device,
     DeviceType,
     RegistrationStatus,
-    AuthenticationSessionStatus
-)
+    AuthenticationSessionStatus,
+    SimpleHub, UserRegistrationStatus)
 
 from hubub_common.util import (
     generate_secret_key,
@@ -72,20 +72,23 @@ class RegisterView(HTTPMethodView):
             request.app.logger.warn("RegisterView hit with data={}".format(json.dumps(data)))
         except Exception as e:
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
-        try:
-            verified = verify_authentication_headers(request.app, request.headers,
-                                                     request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
-            if not verified:
-                request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
-                return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
-        except Exception as e:
-            request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
-            return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        # try:
+        #     verified = verify_authentication_headers(request.app, request.headers,
+        #                                              request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
+        #     if not verified:
+        #         request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
+        #         return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        # except Exception as e:
+        #     request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
+        #     return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
         try:
             request.app.logger.info("Creating User Now.")
             user = User()
             user.email = data['email']
             user.password = data['password']
+            user.user_registration_status = UserRegistrationStatus.started.name
+            user.created_at = datetime.utcnow()
+            user.updated_at = datetime.utcnow()
             user.save()
             request.app.session.commit()
             request.app.session.flush()
@@ -131,7 +134,6 @@ class HomeView(HTTPMethodView):
                 return sanic_response_json({
                     "status": "Not Authorized"
                 }, 503)
-
             user = request.app.session.query(User). \
                 filter(User.email == email). \
                 filter(User.deleted_at == None).one_or_none()
@@ -142,7 +144,6 @@ class HomeView(HTTPMethodView):
 
             # If user exists, go ahead and fill fields.
             if user:
-
                 pass
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
@@ -240,19 +241,22 @@ class CreateSimpleHubView(HTTPMethodView):
 
     async def post(self, request):
 
-        encoding = request.body.decode("utf-8")
-        data = json.loads(encoding)
-        email = data['email']
+        try:
+            encoding = request.body.decode("utf-8")
+            data = json.loads(encoding)
+            email = data['email']
+            request.app.logger.warn("CreateSimpleHubView hit with data={}".format(json.dumps(data)))
+        except Exception as e:
+            return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
+
         user = request.app.session.query(User). \
-            filter(User.username == username). \
+            filter(User.email == email). \
             filter(User.deleted_at == None).one_or_none()
         # User Found
-        if user:
-            pass
-        # No User Found
-        else:
-            pass
-
+        if not user:
+            return sanic_response_json({"status": "Not User found."}, 401)
+        new_simple_hub = SimpleHub()
+        new_simple_hub.title = data['title']
         return sanic_response_json({
             "title": "",
             "description": "",

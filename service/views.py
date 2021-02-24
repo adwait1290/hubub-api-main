@@ -69,14 +69,15 @@ class RegisterView(HTTPMethodView):
         try:
             encoding = request.body.decode("utf-8")
             data = json.loads(encoding)
-            request.app.logger.info("RegisterView hit with data={}".format(json.dumps(data)))
+            request.app.logger.warn("RegisterView hit with data={}".format(json.dumps(data)))
         except Exception as e:
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
         try:
+            request.app.logger.warn("Auth Headers:{}".format(json.dumps(request.headers)))
             verified = verify_authentication_headers(request.app, request.headers,
                                                      request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
             if not verified:
-                request.app.logger.info("RegisterView Authentication Failed. Not Verified.")
+                request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
                 return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
             request.app.logger.info("Creating User Now.")
             user = User()
@@ -178,11 +179,15 @@ class HomeView(HTTPMethodView):
 class CreateDetailedHubView(HTTPMethodView):
     async def post(self, request):
 
-        encoding = request.body.decode("utf-8")
-        data = json.loads(encoding)
-        username = data['username']
+        try:
+            encoding = request.body.decode("utf-8")
+            data = json.loads(encoding)
+            request.app.logger.info("CreateDetailedHubView hit with data={}".format(json.dumps(data)))
+        except Exception as e:
+            return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
+        email = data['email']
         user = request.app.session.query(User). \
-            filter(User.username == username). \
+            filter(User.email== username). \
             filter(User.deleted_at == None).one_or_none()
         # User Found
         if user:

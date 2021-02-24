@@ -82,7 +82,6 @@ class RegisterView(HTTPMethodView):
             request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
             return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
         try:
-            request.app.logger.warn("Auth Headers:{}".format(json.dumps(request.headers)))
             request.app.logger.info("Creating User Now.")
             user = User()
             user.email = data['email']

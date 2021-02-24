@@ -121,21 +121,26 @@ class LoginView(HTTPMethodView):
 class HomeView(HTTPMethodView):
 
     async def get(self, request):
-        verified = verify_authentication_headers(request.app, request.headers, request.app.hububconfig.get('APP_CLIENT_SECRET'),
-                                      request.url)
         try:
             encoding = request.body.decode("utf-8")
             data = json.loads(encoding)
+            request.app.logger.warn("HomeView hit with data={}".format(json.dumps(data)))
         except Exception as e:
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
+
+        # try:
+        #     verified = verify_authentication_headers(request.app, request.headers,
+        #                                              request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
+        #     if not verified:
+        #         request.app.logger.warn("HomeView Authentication Failed. Not Verified.")
+        #         return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        # except Exception as e:
+        #     request.app.logger.warn("HomeView Authentication Failed. Not Verified.")
+        #     return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
         try:
             # Check if user exists
             email = data['email']
             # Check if authentication worked
-            if not verified:
-                return sanic_response_json({
-                    "status": "Not Authorized"
-                }, 503)
             user = request.app.session.query(User). \
                 filter(User.email == email). \
                 filter(User.deleted_at == None).one_or_none()
@@ -146,7 +151,9 @@ class HomeView(HTTPMethodView):
 
             # If user exists, go ahead and fill fields.
             if user:
-                pass
+                user_simplehubs = request.app.session.query(UserSimpleHub).\
+                    filter(UserSimpleHub.user_id == user.id).\
+                    all()
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
 
@@ -170,6 +177,7 @@ class HomeView(HTTPMethodView):
                 ],
                 "simple_hubs": [
                     {
+                        "hub_id": "",
                         "title": "",
                         "url_type": "",
                         "is_published": "",
@@ -265,7 +273,11 @@ class CreateSimpleHubView(HTTPMethodView):
         try:
             new_simple_hub = SimpleHub()
             new_simple_hub.title = data['title']
-            new_simple_hub.description = data['description']
+            if 'description' in data:
+                description_field = data['description']
+            else:
+                description_field = None
+            new_simple_hub.description = description_field
             new_simple_hub.is_published = data['is_published']
             new_simple_hub.hub_url = data['hub_url']
             new_simple_hub.order = len(user_hubs)

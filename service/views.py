@@ -73,12 +73,16 @@ class RegisterView(HTTPMethodView):
         except Exception as e:
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
         try:
-            request.app.logger.warn("Auth Headers:{}".format(json.dumps(request.headers)))
             verified = verify_authentication_headers(request.app, request.headers,
                                                      request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
             if not verified:
                 request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
                 return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        except Exception as e:
+            request.app.logger.warn("RegisterView Authentication Failed. Not Verified.")
+            return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        try:
+            request.app.logger.warn("Auth Headers:{}".format(json.dumps(request.headers)))
             request.app.logger.info("Creating User Now.")
             user = User()
             user.email = data['email']
@@ -187,7 +191,7 @@ class CreateDetailedHubView(HTTPMethodView):
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
         email = data['email']
         user = request.app.session.query(User). \
-            filter(User.email== email). \
+            filter(User.email == email). \
             filter(User.deleted_at == None).one_or_none()
         # User Found
         if user:

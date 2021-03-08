@@ -12,9 +12,9 @@ class DetailedHubImage(BaseModel):
     __tablename__ = 'detailedhub_image'
     one_to_one = True
     detailedhub_id = sa.Column(sa.ForeignKey('detailedhub.id', ondelete='CASCADE'),
-                        unique=False)
+                               unique=False)
     image_id = sa.Column(sa.ForeignKey('image.id', ondelete='CASCADE'),
-                         unique=False)
+                         unique=True)
 
 
 class DetailedHubImage(ModelSchema):

@@ -129,15 +129,15 @@ class HomeView(HTTPMethodView):
         except Exception as e:
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
 
-        # try:
-        #     verified = verify_authentication_headers(request.app, request.headers,
-        #                                              request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
-        #     if not verified:
-        #         request.app.logger.warn("HomeView Authentication Failed. Not Verified.")
-        #         return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
-        # except Exception as e:
-        #     request.app.logger.warn("HomeView Authentication Failed. Not Verified.")
-        #     return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        try:
+            verified = verify_authentication_headers(request.app, request.headers,
+                                                     request.app.hububconfig.get('APP_CLIENT_SECRET'), request.url)
+            if not verified:
+                request.app.logger.warn("HomeView Authentication Failed. Not Verified.")
+                return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
+        except Exception as e:
+            request.app.logger.warn("HomeView Authentication Failed. Not Verified.")
+            return sanic_response_json({"status": "Authentication Failed. Not Verified."}, 503)
         try:
             # Check if user exists
             email = data['email']
@@ -166,9 +166,35 @@ class HomeView(HTTPMethodView):
                             "title": h0.title,
                             "description": h0.description,
                             "hub_url": h0.hub_url,
+                            "generated_url": h0.generated_url,
                             "order": h0.order,
-                            "image_url": h0.image_url,
+                            "image_url": h0.image_url
                         })
+                user_detailedhubs = request.app.session.query(UserDetailedHub). \
+                    filter(UserDetailedHub.user_id == user.id). \
+                    all()
+                detailed_hubs = []
+                for h in user_detailedhubs:
+                    h0 = request.app.query(DetailedHub). \
+                        filter(DetailedHub.id == h.detailed_hub.id). \
+                        first()
+                    if h0:
+                        detailed_hub_image = request.app.session.query(DetailedHubImage). \
+                            filter(DetailedHubImage.id == detailed_hub_image.id). \
+                            first()
+                        if detailed_hub_image:
+                            image = request.app.session.query(Image). \
+                                filter(Image.id == detailed_hub_image.id). \
+                                first()
+                            detailed_hubs.append({
+                                "detailedhub_id": h0.id,
+                                "title": h0.title,
+                                "description": h0.description,
+                                "hub_url": h0.hub_url,
+                                "generated_url": h0.generated_url,
+                                "order": h0.order,
+                                "image_url": image.image_url
+                            })
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
 
@@ -220,7 +246,8 @@ class CreateDetailedHubView(HTTPMethodView):
         try:
             image_data = data['image']
             image_path, image_filename = upload_single_image_to_s3(app=request.app, user_id=user.id,
-                                               image=image_data['image'], encoding=image_data['encoding'])
+                                                                   image=image_data['image'],
+                                                                   encoding=image_data['encoding'])
         except Exception as e:
             logging.getLogger().warn("S3Upload CreateSimpleHubView Image Exception:{}".format(e))
             return sanic_response_json({"status": "there was a problem with your request"}, status=503)
@@ -288,15 +315,6 @@ class CreateDetailedHubView(HTTPMethodView):
             return sanic_response_json({"status": "there was a problem with your request"}, status=503)
         return sanic_response_json({
             "status": "Successfully Created Simple Hub"
-        }, status=200)
-        return sanic_response_json({
-            "title": "",
-            "description": "",
-            "is_published": "",
-
-            "hub_url": "",
-            "image_url": "",
-            "order": ""
         }, status=200)
 
 

@@ -4,6 +4,7 @@ from marshmallow import fields
 from marshmallow_sqlalchemy import ModelSchema
 
 from marshmallow import post_load
+from sqlalchemy.orm import relationship
 
 from .base import BaseModel
 from .db import Session
@@ -18,6 +19,7 @@ class DetailedHub(BaseModel):
     title = sa.Column(sa.String, nullable=True)
     is_published = sa.Column(sa.Boolean, default=False)
     hub_url = sa.Column(sa.String, nullable=True)
+    generated_url = sa.Column(sa.String, nullable=True)
     image_url = sa.Column(sa.String, nullable=True)
     order = sa.Column(sa.Integer, default=0)
     created_at = sa.Column(sa.DateTime, server_default=func.now())
@@ -34,6 +36,7 @@ class DetailedHubSchema(ModelSchema):
     title = fields.String(required=False)
     is_published = fields.Boolean(required=True)
     hub_url = fields.String(required=False)
+    generated_url = fields.String(required=False)
     image_url = fields.String(required=False)
     order = fields.Integer(required=True)
     created_at = fields.DateTime(required=False)

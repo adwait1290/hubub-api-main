@@ -40,7 +40,6 @@ class User(BaseModel):
     idtoken = sa.Column(sa.String)
     secret1 = sa.Column(sa.String)
     secret2 = sa.Column(sa.String)
-
     tags = relationship("UserTag", backref="user", uselist=True, lazy="dynamic")
 
     created_at = sa.Column(sa.DateTime, server_default=func.now())

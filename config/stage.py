@@ -46,5 +46,5 @@ AUTHENTICATION_TIMEOUT_SECONDS = 40
 
 SECRET_KEY = 'cd15c9878c061b5492eb44897fa95cbf78bbf606c3eb81d785beda009097c097'
 
-aws_access_key = "AKIAJEJEG42DJP5EIOIQ"
-aws_secret_key = "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"
+aws_access_key = "AKIA3KDZNSF3I32UUPKM"
+aws_secret_key = "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"

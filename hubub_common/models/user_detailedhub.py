@@ -3,7 +3,6 @@ from marshmallow_sqlalchemy import ModelSchema
 
 from .base import BaseModel
 
-
 from .db import Session
 
 import sqlalchemy as sa
@@ -13,9 +12,9 @@ class UserDetailedHub(BaseModel):
     __tablename__ = 'user_detailedhub'
     one_to_many = True
     user_id = sa.Column(sa.ForeignKey('user.id', ondelete='CASCADE'),
-        unique=False)
+                        unique=False)
     detailed_hub_id = sa.Column(sa.ForeignKey('detailedhub.id', ondelete='CASCADE'),
-        unique=False)
+                                unique=False)
 
 
 class UserDetailedHubScema(ModelSchema):

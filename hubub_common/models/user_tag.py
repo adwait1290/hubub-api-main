@@ -6,12 +6,6 @@ from .base import BaseModel
 from .db import Session
 
 import sqlalchemy as sa
-from sqlalchemy import (
-        Index, DDL, event, FetchedValue, func, Column, false,
-        Integer, ForeignKey, String, DateTime, UniqueConstraint, Boolean
-    )
-
-from sqlalchemy.orm import relationship
 
 
 class UserTag(BaseModel):

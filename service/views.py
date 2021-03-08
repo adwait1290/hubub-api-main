@@ -6,6 +6,8 @@ import urllib
 
 import requests
 
+from hubub_common.models.detailedhub_image import DetailedHubImage
+from hubub_common.models.image import Image
 from hubub_common.models.user_simple_hub import UserSimpleHub
 
 requests.packages.urllib3.disable_warnings()
@@ -37,7 +39,7 @@ from hubub_common.models import (
     DeviceType,
     RegistrationStatus,
     AuthenticationSessionStatus,
-    SimpleHub, UserRegistrationStatus)
+    SimpleHub, UserRegistrationStatus, DetailedHub, UserDetailedHub)
 
 from hubub_common.util import (
     generate_secret_key,
@@ -105,7 +107,6 @@ class RegisterView(HTTPMethodView):
             return sanic_response_json({"status": "there was a problem with your request"}, status=503)
 
 
-
 class LoginView(HTTPMethodView):
 
     async def post(self, request):
@@ -151,22 +152,22 @@ class HomeView(HTTPMethodView):
 
             # If user exists, go ahead and fill fields.
             if user:
-                user_simplehubs = request.app.session.query(UserSimpleHub).\
-                    filter(UserSimpleHub.user_id == user.id).\
+                user_simplehubs = request.app.session.query(UserSimpleHub). \
+                    filter(UserSimpleHub.user_id == user.id). \
                     all()
                 simple_hubs = []
                 for h in user_simplehubs:
-                    h0 = request.app.session.query(SimpleHub).\
-                        filter(SimpleHub.id == h.simple_hub_id).\
+                    h0 = request.app.session.query(SimpleHub). \
+                        filter(SimpleHub.id == h.simple_hub_id). \
                         first()
-                    if(h0):
+                    if (h0):
                         simple_hubs.append({
                             "simplehub_id": h0.id,
-                            "title":h0.title,
-                            "description":h0.description,
+                            "title": h0.title,
+                            "description": h0.description,
                             "hub_url": h0.hub_url,
                             "order": h0.order,
-                            "image_url":h0.image_url,
+                            "image_url": h0.image_url,
                         })
         except Exception as e:
             request.app.logger.info("Exception loading data :{0}".format(e))
@@ -200,24 +201,99 @@ class CreateDetailedHubView(HTTPMethodView):
         try:
             encoding = request.body.decode("utf-8")
             data = json.loads(encoding)
-            request.app.logger.info("CreateDetailedHubView hit with data={}".format(json.dumps(data)))
+            email = data['email']
+            request.app.logger.warn("CreateDetailedHubView hit with data={}".format(json.dumps(data)))
         except Exception as e:
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
-        email = data['email']
+
         user = request.app.session.query(User). \
             filter(User.email == email). \
             filter(User.deleted_at == None).one_or_none()
         # User Found
-        if user:
-            pass
-        # No User Found
-        else:
-            pass
+        if not user:
+            return sanic_response_json({"status": "No User found."}, 401)
 
+        user_hubs = request.app.session.query(UserSimpleHub). \
+            filter(UserSimpleHub.user_id == user.id). \
+            filter(SimpleHub.deleted_at == None). \
+            all()
+        try:
+            image_data = data['image']
+            image_path, image_filename = upload_single_image_to_s3(app=request.app, user_id=user.id,
+                                               image=image_data['image'], encoding=image_data['encoding'])
+        except Exception as e:
+            logging.getLogger().warn("S3Upload CreateSimpleHubView Image Exception:{}".format(e))
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
+
+        # Create Image First
+        try:
+            image = Image()
+            image.image_key = image_path
+            image.image_name = image_filename
+            image.image_encoding = image_data['encoding']
+            image.image_url = request.app.hububconfig.get("URL").format(image_path)
+            image.created_at = datetime.utcnow()
+            image.updated_at = datetime.utcnow()
+            image.save()
+            request.app.session.commit()
+            request.app.session.flush()
+        except Exception as e:
+            logging.getLogger().warn("SQLALCHEMY ERROR CreateDetailedHubView Image Exception:{}".format(e))
+            request.app.session.rollback()
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
+        try:
+            new_detailed_hub = DetailedHub()
+            new_detailed_hub.title = data['title']
+            if 'description' in data:
+                description_field = data['description']
+            else:
+                description_field = None
+            new_detailed_hub.description = description_field
+            new_detailed_hub.is_published = data['is_published']
+            new_detailed_hub.hub_url = data['hub_url']
+            new_detailed_hub.order = len(user_hubs)
+            new_detailed_hub.updated_at = datetime.utcnow()
+            new_detailed_hub.created_at = datetime.utcnow()
+            new_detailed_hub.save()
+            request.app.session.commit()
+            request.app.session.flush()
+        except Exception as e:
+            logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView DetailedHub Exception:{}".format(e))
+            request.app.session.rollback()
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
+        try:
+            detailedhub_image = DetailedHubImage()
+            detailedhub_image.user_id = user.id
+            detailedhub_image.detailed_hub_id = new_detailed_hub.id
+            detailedhub_image.save()
+            request.app.session.commit()
+            request.app.session.flush()
+            request.app.logger.info("New Simple Hub for email:{0}".format(user.email))
+        except Exception as e:
+            logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView DetailedHubImage Exception:{}".format(e))
+            request.app.session.rollback()
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
+
+        try:
+            user_detailedhub = UserDetailedHub()
+            user_detailedhub.user_id = user.id
+            user_detailedhub.detailed_hub_id = new_detailed_hub.id
+            user_detailedhub.save()
+            request.app.session.commit()
+            request.app.session.flush()
+            request.app.logger.info("New Simple Hub for email:{0}".format(user.email))
+        except Exception as e:
+            logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView UserDetailedHub Exception:{}".format(e))
+            request.app.session.rollback()
+            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
+        return sanic_response_json({
+            "status": "Successfully Created Simple Hub"
+        }, status=200)
         return sanic_response_json({
             "title": "",
             "description": "",
             "is_published": "",
+
             "hub_url": "",
             "image_url": "",
             "order": ""
@@ -271,8 +347,8 @@ class CreateSimpleHubView(HTTPMethodView):
             return sanic_response_json({"status": "No User found."}, 401)
 
         user_hubs = request.app.session.query(UserSimpleHub). \
-            filter(UserSimpleHub.user_id == user.id) .\
-            filter(SimpleHub.deleted_at == None).\
+            filter(UserSimpleHub.user_id == user.id). \
+            filter(SimpleHub.deleted_at == None). \
             all()
         try:
             new_simple_hub = SimpleHub()
@@ -307,7 +383,7 @@ class CreateSimpleHubView(HTTPMethodView):
             request.app.session.rollback()
             return sanic_response_json({"status": "there was a problem with your request"}, status=503)
         return sanic_response_json({
-            "status" : "Successfully Created Simple Hub"
+            "status": "Successfully Created Simple Hub"
         }, status=200)
 
 

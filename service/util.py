@@ -1,7 +1,9 @@
-
+import base64
 import json
 import logging
 
+from boto.file import Key
+from boto.s3.connection import S3Connection
 from sanic.response import json as sanic_response_json
 
 from hubub_common.redis import redisget, redisdel, redisset, RedisDatabase
@@ -18,7 +20,7 @@ from hubub_common.models import (
 
 async def get_validation_data(request, auth_request_id):
     logging.getLogger().info("Waiting for identification result for auth_request_id={}"
-                    .format(auth_request_id))
+                             .format(auth_request_id))
     resp = await redisget(request.app, auth_request_id, RedisDatabase.Authentication)
 
     if resp:
@@ -28,56 +30,79 @@ async def get_validation_data(request, auth_request_id):
         return None, 400
 
 
-async def get_validation_status(request, auth_request_id, validation_secret):
-    server_validation_secret = await get_validation_secret(request, auth_request_id)
-    logging.getLogger().warn("SERVER VALIDATION SECRET = {0} AND PROVIDED VALIATION SECRET = {1}".format(server_validation_secret, validation_secret))
+def upload_images_to_s3(app, user_id, images: List[str], encoding: str) -> str:
+    """
 
-    if validation_secret != server_validation_secret:
-        logging.getLogger().warn("Stored and received secrets are not equal.")
-        raise InvalidValueException("validation_secret")
-        return False
+    :param app: Current Servoce
+    :param user_id: (int) User.id
+    :param images_path: (str) Path for images. <user_id>/<images_path>/[images]
+    :param images: List of images
+    :param encoding: (str) encoding for images
+    :return: (str) Path to the images
+    """
 
-    logging.getLogger().info("Stored and received secrets are equal.")
-    status = await redisdel(request.app, auth_request_id, RedisDatabase.Authentication)
+    logging.getLogger().info("Got {0} images for user:{1}".format(len(images), user_id))
+    if app.sonikpassconfig.get("IGNORE_SERVICE_CREDENTIALS"):
+        return 'client_id', 'client_secret'
 
-    if status:
-        return True
+    assert user_id is not None
+    aws_access_key = app.sonikpassconfig.get('aws_access_key')
+    assert aws_access_key is not None
 
-    return False
+    aws_secret_key = app.sonikpassconfig.get('aws_secret_key')
+    assert aws_secret_key is not None
+
+    conn = S3Connection(aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
+    bucket_name = app.sonikpassconfig.get('S3_FACIAL_IMAGES_BUCKET_NAME')
+    assert bucket_name is not None
+    bucket = conn.get_bucket(bucket_name)
+    for image in images:
+        filename = '/'.join([
+            app.sonikpassconfig.get('S3_FACIAL_PREFIX'),
+            '/'.join([str(user_id)]),
+            '.'.join([generate_secret_key(64), encoding])
+        ])
+        k = Key(bucket, filename)
+        image = base64.b64decode(image)
+        k.set_contents_from_string(image)
+    path = '/'.join([
+        app.sonikpassconfig.get('S3_FACIAL_PREFIX'),
+        '/'.join([str(user_id)])])
+
+    return path
 
 
-async def make_authentication_status_secret(request, auth_request_id, validation_data_secret):
-    logging.getLogger().info("Got request with auth_request_id={}"
-                            .format(auth_request_id))
-    authentication_status_secret = generate_secret_key()
-    auth_status = await redisset(request.app, auth_request_id, authentication_status_secret, RedisDatabase.Authentication)
-    validation_status = await redisset(request.app, auth_request_id, validation_data_secret, RedisDatabase.Session)
+def upload_single_image_to_s3(app, user_id, image: str, encoding: str) -> (str,str):
+    """
 
-    if auth_status and validation_status:
-        return sanic_response_json({
-            'authentication_status_secret': authentication_status_secret,
-            'validation_data_secret': validation_data_secret
-        })
-    elif auth_status == None:
-        return sanic_response_json({
-            'could not set authentication status secret':'failed'
-        })
-    elif validation_status == None:
-        return sanic_response_json({
-            'could not set validation data secret':'failed'
-        })
+    :param app: Current Servoce
+    :param user_id: (int) User.id
+    :param images_path: (str) Path for images. <user_id>/<images_path>/[images]
+    :param images: List of images
+    :param encoding: (str) encoding for images
+    :return: (str) Path to the images
+    """
+    assert user_id is not None
+    aws_access_key = app.sonikpassconfig.get('aws_access_key')
+    assert aws_access_key is not None
 
-async def get_validation_secret(request, auth_request_id):
+    aws_secret_key = app.sonikpassconfig.get('aws_secret_key')
+    assert aws_secret_key is not None
 
-    encoded_data = await redisget(request.app, auth_request_id, RedisDatabase.Authentication)
+    conn = S3Connection(aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
+    bucket_name = app.sonikpassconfig.get('S3_IMAGES_BUCKET_NAME')
+    assert bucket_name is not None
+    bucket = conn.get_bucket(bucket_name)
+    filename = '/'.join(
+        app.hububappconfig.get('HUBUB_IMAGE_PREFIX'),
+        '/'.join([str(user_id)]),
+        '.'.join([generate_secret_key(64), encoding]))
 
-    if encoded_data is None:
-        logging.getLogger().warn("Validation secret key for auth_request_id={} not found."
-                                .format(auth_request_id))
-        raise InvalidValueException("auth_request_id")
+    k = Key(bucket, filename)
+    image = base64.b64decode(image)
+    k.set_contents_from_string(image)
+    path = '/'.join([
+        app.sonikpassconfig.get('S3_IMAGE_PREFIX'),
+        '/'.join([str(user_id)])])
 
-    escaped_data = encoded_data.decode("utf-8")
-    string_data = str.strip(escaped_data)
-    data = json.loads(string_data)
-    validation = json.loads(data['validation'])
-    return validation['validation_secret']
+    return path, filename

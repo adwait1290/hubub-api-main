@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 class DetailedHubImage(BaseModel):
     __tablename__ = 'detailedhub_image'
-    one_to_many = True
+    one_to_one = True
     user_id = sa.Column(sa.ForeignKey('detailedhub.id', ondelete='CASCADE'),
                         unique=False)
     image_id = sa.Column(sa.ForeignKey('image.id', ondelete='CASCADE'),

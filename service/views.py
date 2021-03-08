@@ -8,7 +8,7 @@ import requests
 
 from hubub_common.models.detailedhub_image import DetailedHubImage
 from hubub_common.models.image import Image
-from hubub_common.models.user_simple_hub import UserSimpleHub
+from hubub_common.models.user_simplehub import UserSimpleHub
 
 requests.packages.urllib3.disable_warnings()
 

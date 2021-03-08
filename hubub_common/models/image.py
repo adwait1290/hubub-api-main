@@ -30,7 +30,7 @@ class Image(BaseModel):
 
 
 class ImageSchema(ModelSchema):
-    id = fields.Integer(required=True)
+    id = fields.Integer(required=False)
     image_key = fields.String(required=True)
     image_name = fields.String(required=True)
     image_path = fields.String(required=True)

@@ -18,7 +18,7 @@ from .service_provider import *
 from .user_tag import *
 from .user import *
 from .device import *
-from .user_simple_hub import *
+from .user_simplehub import *
 from .user_detailedhub import *
 # account orm
 

@@ -1,33 +1,14 @@
 import base64
 import json
 import logging
-
+from typing import List
 from boto.file import Key
 from boto.s3.connection import S3Connection
-from sanic.response import json as sanic_response_json
-
 from hubub_common.redis import redisget, redisdel, redisset, RedisDatabase
 
-from hubub_common.exceptions import InvalidValueException
 from hubub_common.util import (
     generate_secret_key
 )
-
-from hubub_common.models import (
-    User
-)
-
-
-async def get_validation_data(request, auth_request_id):
-    logging.getLogger().info("Waiting for identification result for auth_request_id={}"
-                             .format(auth_request_id))
-    resp = await redisget(request.app, auth_request_id, RedisDatabase.Authentication)
-
-    if resp:
-        data = resp.decode('utf-8')
-        return data, 200
-    else:
-        return None, 400
 
 
 def upload_images_to_s3(app, user_id, images: List[str], encoding: str) -> str:

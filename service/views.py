@@ -288,18 +288,18 @@ class CreateDetailedHubView(HTTPMethodView):
             logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView DetailedHub Exception:{}".format(e))
             request.app.session.rollback()
             return sanic_response_json({"status": "there was a problem with your request"}, status=503)
-        try:
-            detailedhub_image = DetailedHubImage()
-            detailedhub_image.user_id = user.id
-            detailedhub_image.detailed_hub_id = new_detailed_hub.id
-            detailedhub_image.save()
-            request.app.session.commit()
-            request.app.session.flush()
-            request.app.logger.info("New Simple Hub for email:{0}".format(user.email))
-        except Exception as e:
-            logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView DetailedHubImage Exception:{}".format(e))
-            request.app.session.rollback()
-            return sanic_response_json({"status": "there was a problem with your request"}, status=503)
+        # try:
+        #     detailedhub_image = DetailedHubImage()
+        #     detailedhub_image.user_id = user.id
+        #     detailedhub_image.detailed_hub_id = new_detailed_hub.id
+        #     detailedhub_image.save()
+        #     request.app.session.commit()
+        #     request.app.session.flush()
+        #     request.app.logger.info("New Simple Hub for email:{0}".format(user.email))
+        # except Exception as e:
+        #     logging.getLogger().warn("SQLALCHEMY ERROR CreateSimpleHubView DetailedHubImage Exception:{}".format(e))
+        #     request.app.session.rollback()
+        #     return sanic_response_json({"status": "there was a problem with your request"}, status=503)
 
         try:
             user_detailedhub = UserDetailedHub()

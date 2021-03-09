@@ -15,6 +15,7 @@ from .detailed_hub import *
 from .simple_hub import *
 from .user_simplehub import *
 from .user_detailedhub import *
+from .detailedhub_image import *
 
 # user orm
 from .service_provider import *

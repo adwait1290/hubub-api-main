@@ -10,17 +10,17 @@ import sqlalchemy as sa
 
 class DetailedHubImage(BaseModel):
     __tablename__ = 'detailedhub_image'
-    one_to_many = True
+    many_to_many = True
     detailedhub_id = sa.Column(sa.ForeignKey('detailedhub.id', ondelete='CASCADE'),
-                               unique=False)
+                               unique=True)
     image_id = sa.Column(sa.ForeignKey('image.id', ondelete='CASCADE'),
-                         unique=False)
+                         unique=True)
 
 
 class DetailedHubImage(ModelSchema):
     id = fields.Integer(required=False)
     detailedhub_id = fields.Integer(required=True)
-    detailedhub_image_id = fields.Integer(required=True)
+    image_id = fields.Integer(required=True)
 
     class Meta:
         model = DetailedHubImage

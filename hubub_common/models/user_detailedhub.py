@@ -20,7 +20,7 @@ class UserDetailedHub(BaseModel):
 class UserDetailedHubScema(ModelSchema):
     id = fields.Integer(required=False)
     user_id = fields.Integer(required=True)
-    user_detailedhub_id = fields.Integer(required=True)
+    detailedhub_id = fields.Integer(required=True)
 
     class Meta:
         model = UserDetailedHub

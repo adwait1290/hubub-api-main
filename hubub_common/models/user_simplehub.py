@@ -20,7 +20,7 @@ class UserSimpleHub(BaseModel):
 class UserSimpleHubScema(ModelSchema):
     id = fields.Integer(required=False)
     user_id = fields.Integer(required=True)
-    user_simplehub_id = fields.Integer(required=True)
+    simplehub_id = fields.Integer(required=True)
 
     class Meta:
         model = UserSimpleHub

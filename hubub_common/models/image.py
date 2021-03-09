@@ -25,7 +25,7 @@ class Image(BaseModel):
     deleted_at = sa.Column(sa.DateTime, nullable=True, server_default=None)
 
     @post_load
-    def make_detailed_hub(self, data):
+    def make_image(self, data):
         return Image(**data)
 
 

@@ -12,17 +12,15 @@ from .push_notification_certificate import *
 # Hubs
 from .image import *
 from .detailed_hub import *
-from .detailedhub_image import *
 from .simple_hub import *
 from .user_simplehub import *
 from .user_detailedhub import *
+
 # user orm
 from .service_provider import *
 from .user_tag import *
 from .user import *
 from .device import *
-from .user_simplehub import *
-from .user_detailedhub import *
 # account orm
 
 # authentication transaction orm

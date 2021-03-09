@@ -14,8 +14,8 @@ import sqlalchemy as sa
 
 class Image(BaseModel):
     __tablename__ = 'image'
-    image_id = sa.Column(sa.Integer, primary_key=True, nullable=False)
-    image_key = sa.Column(sa.String, primary_key=True, nullable=False)
+    id = sa.Column(sa.Integer, primary_key=True, nullable=False)
+    image_key = sa.Column(sa.String, nullable=False)
     image_name = sa.Column(sa.String, nullable=True)
     image_path = sa.Column(sa.String, nullable=True)
     image_encoding = sa.Column(sa.String, nullable=True)

@@ -158,7 +158,7 @@ class HomeView(HTTPMethodView):
                 simple_hubs = []
                 for h in user_simplehubs:
                     h0 = request.app.session.query(SimpleHub). \
-                        filter(SimpleHub.id == h.simple_hub_id). \
+                        filter(SimpleHub.id == h.simplehub_id). \
                         first()
                     if (h0):
                         simple_hubs.append({
@@ -176,7 +176,7 @@ class HomeView(HTTPMethodView):
                 detailed_hubs = []
                 for h in user_detailedhubs:
                     h0 = request.app.query(DetailedHub). \
-                        filter(DetailedHub.id == h.detailed_hub.id). \
+                        filter(DetailedHub.id == h.detailedhub.id). \
                         first()
                     if h0:
                         detailed_hub_image = request.app.session.query(DetailedHubImage). \
@@ -304,7 +304,7 @@ class CreateDetailedHubView(HTTPMethodView):
         try:
             user_detailedhub = UserDetailedHub()
             user_detailedhub.user_id = user.id
-            user_detailedhub.detailed_hub_id = new_detailed_hub.id
+            user_detailedhub.detailedhub_id = new_detailed_hub.id
             user_detailedhub.save()
             request.app.session.commit()
             request.app.session.flush()
@@ -391,7 +391,7 @@ class CreateSimpleHubView(HTTPMethodView):
         try:
             user_simplehub = UserSimpleHub()
             user_simplehub.user_id = user.id
-            user_simplehub.simple_hub_id = new_simple_hub.id
+            user_simplehub.simplehub_id = new_simple_hub.id
             user_simplehub.save()
             request.app.session.commit()
             request.app.session.flush()

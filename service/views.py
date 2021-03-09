@@ -223,7 +223,7 @@ class CreateDetailedHubView(HTTPMethodView):
             email = data['email']
             request.app.logger.warn("CreateDetailedHubView hit with data={}".format(json.dumps(data)))
         except Exception as e:
-            request.app.logger.warn("Exception on CreateDetailedHubView hit with data={0}, Excpetion ={1}".format(json.dumps(request.body), e))
+            request.app.logger.warn("Exception on CreateDetailedHubView hit with Excpetion ={}".format(e))
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
 
         user = request.app.session.query(User). \

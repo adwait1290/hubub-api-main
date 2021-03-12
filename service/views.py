@@ -221,7 +221,7 @@ class CreateDetailedHubView(HTTPMethodView):
             encoding = request.body.decode("utf-8")
             data = json.loads(encoding)
             email = data['email']
-            request.app.logger.warn("CreateDetailedHubView hit with data={}".format(json.dumps(data)))
+            # request.app.logger.warn("CreateDetailedHubView hit with data={}".format(json.dumps(data)))
         except Exception as e:
             request.app.logger.warn("Exception on CreateDetailedHubView hit with Excpetion ={}".format(e))
             return sanic_response_json({"status": "Could not parse data, Exception : {}".format(e)}, 501)
